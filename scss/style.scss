@@ -23,6 +23,53 @@ $default-font-size: 1.6rem;
 $grid-width: 114rem;
 $col-space: 6rem;
 
+//----------------- Media query manager -----------------//
+/* 
+0 - 600px:      Phone
+600 - 900px:    Tablet protrait
+900 - 1200p:    Tablet landscape
+[1200 - 1800] is where our normal style apply
+1800px +:       Big desktop
+
+$breakpoint arguement choices:
+- phone
+- tab-port
+- tab-land
+- big-desktop
+
+1em = 16px 
+*/
+
+@mixin respond($breakpoint) {
+  @if $breakpoint == big-desktop {
+    @media only screen and (min-width: 112.5em) {
+      // width > 1800px
+      @content;
+    }
+  }
+
+  @if $breakpoint == tab-land {
+    @media only screen and (max-width: 75em) {
+      // width < 1200px
+      @content;
+    }
+  }
+
+  @if $breakpoint == tab-port {
+    @media only screen and (max-width: 56.25em) {
+      // width < 900px
+      @content;
+    }
+  }
+
+  @if $breakpoint == phone {
+    @media only screen and (max-width: 37.5em) {
+      // width < 600px
+      @content;
+    }
+  }
+}
+
 //----------------- Base Reset-----------------//
 *,
 *:before,
@@ -33,7 +80,23 @@ $col-space: 6rem;
 }
 
 html {
-  font-size: 62.5%;
+  font-size: 62.5%; // 1rem = 10px
+
+  @include respond(big-desktop) {
+    font-size: 75%;
+  }
+
+  @include respond(tab-land) {
+    font-size: 56.25%;
+  }
+
+  @include respond(tab-port) {
+    font-size: 50%;
+  }
+
+  // @include respond(phone) {
+  //   font-size: 50%;
+  // }
 }
 
 //----------------- Basic Styling -----------------//
@@ -43,11 +106,19 @@ body {
   font-weight: 400;
   color: $color-grey-dark;
   padding: 3rem;
+
+  @include respond(tab-port) {
+    padding: 0rem;
+  }
 }
 
 .container {
   max-width: 114rem;
   margin: 0 auto;
+
+  @include respond(tab-port) {
+    padding: 0 3rem;
+  }
 }
 
 a {
@@ -65,7 +136,7 @@ img {
 
 //----------------- Utility Classes -----------------//
 .u-text-center {
-  text-align: center;
+  text-align: center !important;
 }
 
 .u-margin-bottom-small {
@@ -74,10 +145,18 @@ img {
 
 .u-margin-bottom-medium {
   margin-bottom: 4rem;
+
+  @include respond(tab-port) {
+    margin-bottom: 3rem;
+  }
 }
 
 .u-margin-bottom-big {
   margin-bottom: 8rem;
+
+  @include respond(tab-port) {
+    margin-bottom: 5rem;
+  }
 }
 
 .u-margin-top-huge {
@@ -94,7 +173,7 @@ img {
   // margin-bottom: 3rem;
   background-image: linear-gradient(
     to right,
-    $color-third-light,
+    $color-primary-light,
     $color-primary-dark
   );
   display: inline-block;
@@ -106,6 +185,14 @@ img {
     transform: skewX(10deg) skewY(1deg) scale(1.1);
     text-shadow: 0.5rem 1rem 2rem rgba($color-dark, 0.2);
   }
+
+  @include respond(tab-port) {
+    font-size: 3rem;
+  }
+
+  @include respond(phone) {
+    font-size: 2.5rem;
+  }
 }
 
 .heading-third {
@@ -115,15 +202,21 @@ img {
 }
 
 .btn {
+  &, // ***** móa nó tại sao tại chỗ này mà nó lại thêm cái background ngay tại header
+  //  vì cái button ngay chỗ form button k có psudeo link, visited
   &:link,
   &:visited {
     display: inline-block;
     text-transform: uppercase;
     padding: 1.5rem 4rem;
     border-radius: 10rem;
-    transition: transform 0.2s;
+    transition: all 0.2s;
     position: relative;
     font-size: $default-font-size;
+
+    // change for the <button> element
+    border: none;
+    cursor: pointer;
   }
 
   &:hover {
@@ -137,7 +230,9 @@ img {
     }
   }
 
-  &:active {
+  &:active,
+  &:focus {
+    outline: none;
     transform: translateY(-1px);
     box-shadow: 0px 0.5rem 1rem rgba($color-dark, 0.2);
   }
@@ -152,11 +247,13 @@ img {
   }
 
   &--green {
-    background-color: $color-primary-light;
+    background-color: $color-primary;
     color: $color-white;
 
     &:after {
-      background-color: $color-primary-light;
+      background-color: $color-primary;
+      // hehe tai sao cho nay lai lam header bi nhu vay
+      // tại vì button k có link and visited
     }
   }
 
@@ -170,14 +267,14 @@ img {
     left: 0;
     border-radius: 10rem;
     z-index: -1;
-    transition: transform 0.3s, opacity 0.3s;
+    transition: all 0.4s;
   }
 
   &--animated {
     animation-name: moveUp;
-    animation-duration: 1s;
+    animation-duration: 0.8s;
     animation-timing-function: ease-in-out;
-    animation-delay: 1.25s;
+    animation-delay: 1s;
     animation-fill-mode: backwards;
     // with animation-fill-mode this animate will apply style from zero before animation start
   }
@@ -191,6 +288,7 @@ img {
     border-bottom: 1px solid $color-primary;
     padding: 3px;
     font-size: $default-font-size;
+    font-weight: 700;
     transition: transform 0.2s;
   }
 
@@ -213,14 +311,34 @@ img {
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
-  flex-wrap: wrap;
 
-  &:not(:last-child) {
-    margin-bottom: 2rem;
+  // &:not(:last-child) {
+  //   margin-bottom: 8rem;
+  // }
+
+  @include respond(tab-port) {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    max-width: 50rem;
+    padding: 0 3px;
+  }
+
+  @include respond(phone) {
+    max-width: 40rem;
   }
 
   // select all class have col in class="row"
-  // [class^="col"] {}
+  [class^="col"] {
+    @include respond(tab-port) {
+      width: 100% !important;
+
+      &:not(:last-child) {
+        margin-bottom: 6rem;
+      }
+    }
+  }
 
   .col-1-of-2 {
     // width: 48.68%;
@@ -262,12 +380,16 @@ img {
     ),
     url("../img/hero.jpg");
   height: 95vh;
-
   background-size: cover;
   background-position: top;
   position: relative;
   -webkit-clip-path: polygon(0 0, 100% 0, 100% 75vh, 0 100%);
   clip-path: polygon(0 0, 100% 0, 100% 75vh, 0 100%);
+
+  @include respond(phone) {
+    -webkit-clip-path: polygon(0 0, 100% 0, 100% 85vh, 0 100%);
+    clip-path: polygon(0 0, 100% 0, 100% 85vh, 0 100%);
+  }
 
   &__top {
     display: flex;
@@ -306,6 +428,11 @@ img {
       animation-duration: 1s;
       animation-delay: 0.5s;
       animation-timing-function: ease-in-out;
+
+      @include respond(phone) {
+        font-size: 5rem;
+        letter-spacing: 1.5rem;
+      }
     }
 
     &-sub {
@@ -317,6 +444,12 @@ img {
       animation-duration: 1s;
       animation-delay: 0.5s;
       animation-timing-function: ease-in-out;
+
+      @include respond(phone) {
+        font-size: 2rem;
+        letter-spacing: 0.4rem;
+        font-weight: 400;
+      }
     }
   }
 }
@@ -370,6 +503,10 @@ img {
   padding: 25rem 0;
   background-color: $color-grey-light-1;
   margin-top: -20vh;
+
+  @include respond(tab-port) {
+    padding: 20rem 0;
+  }
 }
 
 .paragraph {
@@ -382,7 +519,6 @@ img {
 
 .album {
   position: relative;
-  background-color: green;
 
   &__photo {
     width: 55%;
@@ -392,24 +528,51 @@ img {
     transition: transform 0.2s;
     outline-offset: 2rem;
 
+    @include respond(tab-port) {
+      position: relative;
+      float: left; // đôi lúc cũng phải dùng float thôi
+      width: 33.33333%;
+      box-shadow: 0 1.5rem 3rem rgba($color-dark, 0.2);
+    }
+
     &--p1 {
       left: 0;
       top: -2rem;
+
+      @include respond(tab-port) {
+        top: 0;
+      }
     }
     &--p2 {
       right: 0;
       top: 2rem;
+
+      @include respond(tab-port) {
+        top: -1rem;
+        transform: scale(1.1);
+        z-index: 20;
+      }
     }
     &--p3 {
       left: 20%;
       // bottom: 0; khong hoat dong dung nhu no dc dinh nghia nhi?
       top: 10rem;
+
+      @include respond(tab-port) {
+        top: 0rem;
+        left: 0;
+      }
     }
 
     &:hover {
       transform: scale(1.05) translateY(-0.5rem);
       z-index: 11;
       outline: 1.5rem solid $color-primary;
+
+      // on the touch the device this not happen anyway we can ignore this
+      @include respond(tab-port) {
+        transform: scale(1.2);
+      }
     }
   }
   // ma no cho nay hai nao
@@ -433,6 +596,10 @@ img {
   margin-top: -10rem;
   transform: skewY(-7deg);
 
+  @include respond(tab-port) {
+    padding: 10rem 0;
+  }
+
   & > * {
     transform: skewY(7deg);
   }
@@ -441,7 +608,7 @@ img {
     background-color: rgba($color-white, 0.8);
     text-align: center;
     padding: 25px;
-    min-height: 300px;
+    min-height: 30rem;
     font-size: 1.5rem;
     border-radius: 3px;
     box-shadow: 0 1.5rem 4rem rgba($color-dark, 0.2);
@@ -452,6 +619,10 @@ img {
     &:hover {
       transform: translateY(-1rem) scale(1.03);
     }
+
+    @include respond(tab-port) {
+      min-height: 20rem;
+    }
   }
 
   &__icon {
@@ -461,17 +632,28 @@ img {
       $color-primary-light,
       $color-primary-dark
     );
+    // kha la ngo kk
+    // background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
     margin-bottom: 3rem;
+
+    @include respond(tab-port) {
+      font-size: 5rem;
+      margin-bottom: 1.5rem;
+    }
   }
 }
 
 //----------------- Tours -----------------//
 .tours {
   background-color: $color-grey-light-1;
-  padding: 25rem 0 50rem;
+  padding: 25rem 0 15rem;
   margin-top: -10rem;
+
+  @include respond(tab-port) {
+    padding: 20rem 0 10rem;
+  }
 }
 
 .card {
@@ -504,7 +686,27 @@ img {
       transform: rotateY(180deg);
 
       &-1 {
-        background-image: linear-gradient(to bottom right, #ffb900, #ff7730);
+        background-image: linear-gradient(
+          to bottom right,
+          $color-secondary-light,
+          $color-secondary-dark
+        );
+      }
+
+      &-2 {
+        background-image: linear-gradient(
+          to bottom right,
+          $color-primary-light,
+          $color-primary-dark
+        );
+      }
+
+      &-3 {
+        background-image: linear-gradient(
+          to bottom right,
+          $color-third-light,
+          $color-third-dark
+        );
       }
     }
   }
@@ -528,20 +730,76 @@ img {
 
     &--1 {
       background-image: linear-gradient(
-          to bottom right,
+          to right bottom,
           $color-secondary-light,
           $color-secondary-dark
         ),
         url(../img/nat-5.jpg);
     }
+
+    &--2 {
+      background-image: linear-gradient(
+          to right bottom,
+          $color-primary-light,
+          $color-primary-dark
+        ),
+        url(../img/nat-6.jpg);
+    }
+
+    &--3 {
+      background-image: linear-gradient(
+          to right bottom,
+          $color-third-light,
+          $color-third-dark
+        ),
+        url(../img/nat-7.jpg);
+    }
   }
 
   &__heading {
+    position: absolute;
+    text-align: right;
+    right: 2rem;
+    top: 12rem;
+    text-transform: uppercase;
+    font-size: 2.8rem;
+    font-weight: 300;
+    color: $color-white;
+    width: 75%;
+
+    &-span {
+      padding: 1rem 1.5rem;
+      box-decoration-break: break;
+      -webkit-box-decoration-break: clone;
+      &--1 {
+        background-image: linear-gradient(
+          to right bottom,
+          rgba($color-secondary-light, 0.85),
+          rgba($color-secondary-dark, 0.85)
+        );
+      }
+
+      &--2 {
+        background-image: linear-gradient(
+          to right bottom,
+          rgba($color-primary-light, 0.85),
+          rgba($color-primary-dark, 0.85)
+        );
+      }
+
+      &--3 {
+        background-image: linear-gradient(
+          to right bottom,
+          rgba($color-third-light, 0.85),
+          rgba($color-third-dark, 0.85)
+        );
+      }
+    }
   }
 
   &__info {
     text-align: center;
-    padding: 3rem;
+    padding: 3rem 5rem 3rem;
 
     &-text {
       padding: 1rem;
@@ -551,30 +809,390 @@ img {
       }
     }
   }
+
+  // Back side style
+  &__cta {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    text-align: center;
+  }
+
+  &__price-box {
+    color: $color-white;
+    margin-bottom: 8rem;
+  }
+
+  &__price-only {
+    font-size: 1.4rem;
+    text-transform: uppercase;
+  }
+
+  &__price-value {
+    font-size: 6rem;
+    font-weight: 100;
+  }
+
+  // Styling card for mobie, tablet
+  // @include respond(tab-port) {
+  @media only screen and (max-width: 56.25em), only screen and (hover: none) {
+    height: auto;
+    border-radius: 3px;
+    background-color: $color-white;
+
+    &__info {
+      padding: 1rem 3rem;
+    }
+
+    &__side {
+      position: relative;
+      box-shadow: none;
+      height: auto;
+      border-radius: 0;
+
+      &--back {
+        transform: rotateY(0);
+        clip-path: polygon(0 15%, 100% 0, 100% 100%, 0 100%);
+      }
+    }
+
+    &:hover &__side--front {
+      transform: rotateY(0);
+    }
+
+    // Back side style
+    &__cta {
+      position: relative;
+      top: 0;
+      left: 0;
+      transform: translate(0);
+      width: 100%;
+      padding: 7rem 4rem 4rem 4rem;
+    }
+
+    &__price-box {
+      margin-bottom: 3rem;
+    }
+
+    &__price-value {
+      font-size: 4rem;
+    }
+  }
 }
 
-// &-text {
-//   position: absolute;
-//   right: 0;
-//   bottom: 0;
-//   text-transform: uppercase;
-//   display: flex;
-//   flex-direction: column;
-//   color: $color-white;
-//   font-size: 2.8rem;
-//   background-image: linear-gradient(
-//     to right bottom,
-//     rgba(255, 185, 0, 0.85),
-//     rgba(255, 119, 48, 0.85)
-//   );
-// }
+//----------------- Story -----------------//
+.story {
+  padding: 15rem 0;
+  background-color: $color-grey-light-1;
+  background-image: linear-gradient(
+      rgba($color-white, 0.8),
+      rgba($color-white, 0.8)
+    ),
+    url("../img/nat-6.jpg");
+  background-size: cover;
+  background-position: center;
 
-//   &-span-1 {
-//   }
+  @include respond(tab-port) {
+    padding: 10rem 0;
+  }
+}
 
-//   &-span-2 {
-//     top: -5px;
-//     right: 5px;
-//     z-index: 100;
-//   }
-// }
+.comments {
+  // mot cach lam khac voi flexBox tuy nhien se content se k wrap around the element
+  // display: flex;
+  // justify-content: space-between;
+  width: 75%;
+  margin: 0 auto;
+  padding: 6rem;
+  padding-left: 9rem;
+  font-size: $default-font-size;
+  background-color: $color-white;
+  transform: skewX(-12deg);
+
+  // cant use this b/c transform only 1 apply 1, and use this only work for text not  shape because of tranlate had applied
+  // & > * {
+  //   transform: skew(7deg);
+  // }
+
+  &:not(:last-child) {
+    margin-bottom: 10rem;
+  }
+
+  @include respond(phone) {
+    padding: 5rem;
+    width: 100%;
+    transform: skewX(0);
+  }
+
+  &__shape {
+    // width: 20%;
+    width: 15rem;
+    height: 15rem;
+    position: relative;
+    -webkit-shape-outside: circle(50% at 50% 50%);
+    // only work with floated element & element had defined demensions (width & heigth)
+    shape-outside: circle(50% at 50% 50%);
+    float: left;
+    -webkit-clip-path: circle(50% at 50% 50%);
+    clip-path: circle(50% at 50% 50%);
+    transform: translateX(-3rem) skewX(12deg);
+
+    @include respond(phone) {
+      transform: translateX(-3rem) skewX(0);
+    }
+  }
+
+  &__img {
+    // border-radius: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.2);
+    transition: transform 0.4s;
+
+    @include respond(phone) {
+      transform: skewX(0);
+    }
+  }
+
+  &__caption {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    // width: 50%;
+    transform: translate(-50%, 20%);
+    text-transform: uppercase;
+    text-align: center;
+    color: $color-white;
+    font-size: 1.7rem;
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.5s;
+  }
+  &__text {
+    text-align: left;
+    transform: skewX(12deg);
+
+    // hehe do khuc tren thang cha no -12 nen muon tro lai nhu cu thi thang con phai + 12
+
+    @include respond(phone) {
+      transform: skewX(0);
+    }
+  }
+
+  // means when i hover to this comment i want to modified this caption
+  &:hover &__caption {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+    visibility: visible;
+  }
+
+  &:hover &__img {
+    transform: scale(1);
+    filter: blur(3px) brightness(80%);
+  }
+}
+
+//----------------- Booking -----------------//
+
+.booking {
+  background-image: linear-gradient(
+    to bottom right,
+    $color-primary-light,
+    $color-primary-dark
+  );
+  padding: 15rem 0;
+
+  @include respond(tab-port) {
+    padding: 10rem 0;
+  }
+}
+
+.book {
+  // background-image only set only value at a time
+  //   background-position: center;
+  //   background-size: cover;
+  //   background-repeat: no-repeat;
+
+  // Short hand css
+  // một cách làm khác mà không cần dùng clip-path trong trường hợp này
+  background: linear-gradient(
+      105deg,
+      rgba($color-white, 0.9) 0%,
+      rgba($color-white, 0.9) 50%,
+      transparent 50%
+    ),
+    url(../img/nat-10.jpg) center center/cover no-repeat;
+  border-radius: 3px;
+  box-shadow: 0 1.5rem 4rem rgba($color-dark, 0.15);
+
+  @include respond(tab-land) {
+    background: linear-gradient(
+        105deg,
+        rgba($color-white, 0.9) 0%,
+        rgba($color-white, 0.9) 65%,
+        transparent 65%
+      ),
+      url(../img/nat-10.jpg) center center/cover no-repeat;
+  }
+
+  @include respond(phone) {
+    background: linear-gradient(
+        105deg,
+        rgba($color-white, 0.8) 0%,
+        rgba($color-white, 0.8) 100%,
+        transparent 100%
+      ),
+      url(../img/nat-10.jpg) center center/cover no-repeat;
+  }
+
+  &__form {
+    width: 50%;
+    padding: 6rem;
+
+    @include respond(tab-land) {
+      width: 75%;
+    }
+
+    @include respond(phone) {
+      width: 100%;
+    }
+  }
+
+  // Dùng clip path
+  // &__form {
+  //   background-color: rgb($color-white, 0.8);
+  //   width: 50%;
+  //   height: 50rem;
+  //   // -webkit-clip-path: polygon(0 0, 100% 0, 100% 20%, 20% 100%, 100% 100%);
+  //   clip-path: polygon(0 0, 100% 0, 80% 100%, 0 100%);
+  //   // (x y, x y, x y, x y)
+  //   text-transform: uppercase;
+  // }
+}
+
+.form {
+  &__group {
+    &:not(:last-child) {
+      margin-bottom: 2rem;
+    }
+  }
+
+  &__input {
+    padding: 1.5rem 2rem;
+    font-size: 1.5rem;
+    font-family: inherit;
+    color: inherit;
+    border: none;
+    background-color: rgba($color-white, 0.7);
+    border-radius: 2px;
+    border-bottom: 3px solid transparent;
+    width: 90%;
+    display: block;
+    transition: all 0.3s;
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 1rem 2rem rgba($color-dark, 0.1);
+      border-bottom: 3px solid $color-primary;
+    }
+
+    //hehe mấy các class cùi mía này hiện giờ không cần phải nhớ kk
+    &:focus:invalid {
+      border-bottom: 3px solid $color-secondary-dark;
+    }
+  }
+
+  &__label {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-left: 2rem;
+    margin-top: 0.7rem;
+    display: block;
+    transition: all 0.3s;
+  }
+
+  //hehe mấy các class cùi mía này hiện giờ không cần phải nhớ kk
+  &__input:placeholder-shown + &__label {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4rem);
+  }
+}
+
+//----------------- Footer -----------------//
+.footer {
+  padding: 10rem 0;
+  background: #333;
+  font-size: 1.4rem;
+  color: #f7f7f7;
+
+  @include respond(tab-port) {
+    padding: 8rem 0;
+  }
+
+  &__logo {
+    text-align: center;
+    margin-bottom: 8rem;
+
+    @include respond(tab-port) {
+      margin-bottom: 5rem;
+    }
+
+    &-img {
+      display: inline-block;
+      // hehe for text-align to work
+      width: 15rem;
+      height: auto;
+    }
+  }
+
+  &__list {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-right: 10rem;
+    text-transform: uppercase;
+    padding-top: 2rem;
+    border-top: 1px solid #777;
+
+    @include respond(tab-port) {
+      margin-right: 0;
+      width: 100%;
+    }
+  }
+
+  &__link {
+    &:link,
+    &:visited {
+      color: $color-grey-light-1;
+      background-color: #333;
+      display: inline-block;
+      // Hehe without inline-block here transform will not apply
+      transition: all 0.2s;
+    }
+
+    &:hover,
+    &:active {
+      color: $color-primary;
+      transform: rotate(5deg) scale(1.2);
+      box-shadow: 0 1rem 2rem rgba($color-dark, 0.4);
+    }
+  }
+
+  &__copyright {
+    width: 80%;
+    margin-left: auto;
+    // behave same as float to the left
+    font-size: 1.6rem;
+    padding-top: 2rem;
+    border-top: 1px solid #777;
+
+    @include respond(tab-port) {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+}
